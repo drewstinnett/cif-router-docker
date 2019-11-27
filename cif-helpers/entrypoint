@@ -1,16 +1,27 @@
 #!/bin/bash
 set -e
+set -x
+
 rm -f /tmp/cif_httpd.pid
 rm -f /tmp/cif_router.pid
 
 # Pull in ENV vars for cif setup
-/usr/local/bin/setup-cif-env.py
+/cif-helpers/setup-cif-env.py
 
 # Generate required tokens if they don't exist
-/usr/local/bin/elasticsearch-token-setup.sh
+/cif-helpers/elasticsearch-token-setup.sh
 
 # cp /var/lib/cif/.cif.yml /home/cif/
 # cp /var/lib/cif/csirtg-smrt.yml /etc/cif/
 # cp /var/lib/cif/cif-router.yml /etc/cif/
 
-/usr/bin/supervisord -n -c /usr/local/etc/supervisord.conf
+export CIF_RUNTIME_PATH=/var/lib/cif
+export CIF_DATA_PATH=/var/lib/cif
+export CIF_ROUTER_TRACE=1
+export CIF_ROUTER_PIDFILE=/tmp/cif_router.pid
+export CIF_HUNTER_ADVANCED=1
+export CIF_HUNTER_EXCLUDE="osint.bambenekconsulting.com:dga"
+
+cif-router --config=/etc/cif/cif-router.yml \
+    --hunter-threads 2 \
+    --gatherer-threads 2
