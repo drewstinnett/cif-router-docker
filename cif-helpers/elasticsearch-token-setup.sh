@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -x
 
 # Load up env
 until curl -s "http://${CIF_STORE_NODES}/_cluster/health"; do

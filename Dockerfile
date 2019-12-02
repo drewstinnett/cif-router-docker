@@ -10,30 +10,36 @@ ENV CIF_ANSIBLE_ES=localhost:9200
 ENV CIF_ENABLE_INSTALL=1
 ENV ARCHIVE_URL=https://github.com/csirtgadgets/bearded-avenger/archive
 
+# Disable this once ready to deploy
+# ENV CFLAGS="-O0"
+
+VOLUME /usr/share/GeoIP
+
 EXPOSE 5000
 
-COPY cif-helpers /cif-helpers
 
 RUN apk add --update \
-    git shadow sqlite g++ make python3-dev shadow libxml2-dev libxslt-dev \
-    libffi-dev openssl-dev wget && \
-    rm -rf /var/cache/apk/* && \
+    shadow g++ make python-dev shadow libxml2-dev libxslt-dev \
+    bash libffi-dev openssl-dev wget geoip curl && \
     mkdir -p /var/log/cif && \
     mkdir -p /var/lib/cif && \
     mkdir -p /etc/cif && \
+    mkdir -p /home/cif && \
     useradd -m -s /bin/bash cif && \
     touch /home/cif/.profile && \
     chown -R cif /home/cif && \
+    chown -R cif /etc/cif && \
+    chown -R cif /var/lib/cif && \
     cd /tmp && \
     wget --quiet ${ARCHIVE_URL}/${CIF_VERSION}.tar.gz -O ba.tar.gz && \
     tar -zxf ba.tar.gz  && \
     cd /tmp/bearded-avenger-${CIF_VERSION} && \
-    pip3 install --upgrade --no-cache-dir pip && \
-    pip3 install --no-cache-dir -r ./dev_requirements.txt && \
-    python3 setup.py install
+    pip install --upgrade --no-cache-dir pip && \
+    pip install --no-cache-dir -r ./dev_requirements.txt && \
+    python setup.py install && \
+    rm -rf /var/cache/apk/*  \
+    rm -f /tmp/ba.tar.gz
 
-WORKDIR /home/cif
-
+COPY cif-helpers /cif-helpers
 USER cif
-RUN ls /cif-helpers
 ENTRYPOINT ["/cif-helpers/entrypoint"]

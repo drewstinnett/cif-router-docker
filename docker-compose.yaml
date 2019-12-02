@@ -2,21 +2,48 @@
 
 version: '3'
 services:
-  cif:
+  cif-router:
     build: .
-    container_name: cif-tiny
+    container_name: cif-router
     restart: on-failure
     depends_on:
       - elasticsearch
-    ports:
-      - 5000:5000
     environment:
-      CIFENV_CIF_STORE_STORE: "elasticsearch"
-      CIFENV_CIF_STORE_NODES: "elasticsearch:9200"
+      CIF_STORE_STORE: "elasticsearch"
+      CIF_STORE_NODES: "elasticsearch:9200"
+      CIF_TOKEN_HUNTER: "foo"
+      CIF_TOKEN_ADMIN: "bar"
+      CIF_TOKEN_SMRT: "baz"
+      CIF_TOKEN_HTTP: "quux"
     volumes:
       - cif-config:/etc/cif
       - cif-logs:/var/log/cif
       - cif-db:/var/lib/cif
+      - geoip:/usr/share/GeoIP
+  cif-http:
+    build: cif-http
+    container_name: cif-http
+    restart: on-failure
+    depends_on:
+      - cif-router
+    ports:
+      - 5000:5000
+    environment:
+      CIF_TOKEN_HUNTER: "foo"
+      CIF_TOKEN_ADMIN: "bar"
+      CIF_TOKEN_SMRT: "baz"
+      CIF_TOKEN_HTTP: "quux"
+    volumes:
+      - cif-config:/etc/cif
+      - cif-logs:/var/log/cif
+      - cif-db:/var/lib/cif
+      - geoip:/usr/share/GeoIP
+  geoip:
+    image: tkrs/maxmind-geoipupdate
+    environment:
+      SCHEDULE: '13 1 * * *'
+    volumes:
+      - geoip:/usr/local/share/GeoIP
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:5.4.3
     container_name: elasticsearch_mini
@@ -47,3 +74,4 @@ volumes:
   cif-logs:
   cif-db:
   esdata:
+  geoip:

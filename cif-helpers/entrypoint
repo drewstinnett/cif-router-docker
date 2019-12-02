@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 set -e
 set -x
 
@@ -6,10 +6,10 @@ rm -f /tmp/cif_httpd.pid
 rm -f /tmp/cif_router.pid
 
 # Pull in ENV vars for cif setup
-/cif-helpers/setup-cif-env.py
+#/cif-helpers/setup-cif-env.py
 
 # Generate required tokens if they don't exist
-/cif-helpers/elasticsearch-token-setup.sh
+#/cif-helpers/elasticsearch-token-setup.sh
 
 # cp /var/lib/cif/.cif.yml /home/cif/
 # cp /var/lib/cif/csirtg-smrt.yml /etc/cif/
@@ -21,6 +21,17 @@ export CIF_ROUTER_TRACE=1
 export CIF_ROUTER_PIDFILE=/tmp/cif_router.pid
 export CIF_HUNTER_ADVANCED=1
 export CIF_HUNTER_EXCLUDE="osint.bambenekconsulting.com:dga"
+
+cat << EOF > /etc/cif/cif-router.yml
+---
+hunter_token: ${CIF_TOKEN_HUNTER}
+
+EOF
+
+until curl -s "http://${CIF_STORE_NODES}/_cluster/health"; do
+    echo "Waiting for ${CIF_STORE_NODES} to be up"
+    sleep 5
+done
 
 cif-router --config=/etc/cif/cif-router.yml \
     --hunter-threads 2 \
