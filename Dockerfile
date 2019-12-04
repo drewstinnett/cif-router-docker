@@ -19,10 +19,11 @@ EXPOSE 5000
 
 
 RUN apk add --update \
-    shadow g++ make python-dev shadow libxml2-dev libxslt-dev \
+    shadow g++ make python-dev shadow libxml2-dev libxslt-dev openssl jq \
     bash libffi-dev openssl-dev wget geoip curl && \
     mkdir -p /var/log/cif && \
     mkdir -p /var/lib/cif && \
+    mkdir -p /var/run/cif && \
     mkdir -p /etc/cif && \
     mkdir -p /home/cif && \
     useradd -m -s /bin/bash cif && \
@@ -30,6 +31,7 @@ RUN apk add --update \
     chown -R cif /home/cif && \
     chown -R cif /etc/cif && \
     chown -R cif /var/lib/cif && \
+    chown -R cif /var/run/cif && \
     cd /tmp && \
     wget --quiet ${ARCHIVE_URL}/${CIF_VERSION}.tar.gz -O ba.tar.gz && \
     tar -zxf ba.tar.gz  && \

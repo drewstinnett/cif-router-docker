@@ -21,7 +21,7 @@ services:
       - cif-db:/var/lib/cif
       - geoip:/usr/share/GeoIP
   cif-http:
-    build: cif-http
+    build: ../cif-http-docker
     container_name: cif-http
     restart: on-failure
     depends_on:
